@@ -1,16 +1,21 @@
-const express = require('express'); // express 모듈 불러오기
-const db = require('./db/Connect'); // db 모듈 불러오기
+import dotenv from 'dotenv' // env 파일
+import express, { json } from 'express'; // express 모듈 불러오기
+import db from './db/Connect.js'; // db 모듈 불러오기
+import userRouter from './routes/UserRoutes.js'; // UserRoutes 불러오기
+
+dotenv.config();
+db(); // connection DB
 
 const app = express(); // express 초기화 후 app 할당
-const userRouter = require('./routes/UserRoutes'); // UserRoutes 불러오기
-
-app.set('port', process.env.PORT || 3000); // 서버가 실행될 포트 지정
-
-db(); // connection DB
-app.use(express.json()); // JSON 변환
+app.set('port', process.env.PORT); // 서버가 실행될 포트 지정
+app.use(json()); // JSON 변환
 app.use('/api/user', userRouter); // User 관련 경로
 
 app.listen(app.get('port'), () => {
-    // 몇 번 포트에서 서버 실행하지 지정
-    console.log('express 실행');
+    console.log('Server Connect Success!');
+
+    // localhost:5000 보여지는.
+    app.get('/', function(req,res){
+        res.send('express 실행');
+    });
 });

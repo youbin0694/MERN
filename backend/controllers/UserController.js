@@ -1,82 +1,155 @@
-const User = require('../models/User'); // User 불러오기
+import User from '../models/User.js'; // User 불러오기
 
-// 단일 사용자 찾기
-exports.findUserById = async (req, res) => {
+/**
+ * 단일 사용자 찾기
+ *
+ * @param {*} req 사용자 정보
+ * @param {*} res 조회 결과
+ *
+ * @author yblee
+ * @since 2023. 12. 15.
+ */
+export function findOne(req, res) {
     const userId = req.params.userId;
 
-    // 1
     User.findOne({ id: userId })
         .exec()
         .then(function (user) {
+            console.log("user",user);
             if (user == null) {
-                user = '존재하지 않는 사용자입니다.';
+                return res.json({ status: 400, data: '존재하지 않는 사용자입니다.' });
             }
-            return res.json(user);
+
+            return res.json({ status: 200, data: '로그인에 성공했습니다.' });
         })
         .catch(function (err) {
             return res.json(err);
         });
+}
 
-    // 2
-    try {
-        const user = await User.findOne({ id: userId }).exec();
-        if (user == null) {
-            user = '존재하지 않는 사용자입니다.';
-        }
-        return res.json(user);
-    } catch (error) {
-        return res.json(error);
-    }
-};
+export function findByIdAndPassword(req, res) {
+    const userId = req.params.userId;
+    const password = req.params.password;
+    const exists = true;
 
-// 모든 사용자 찾기
-exports.findAllUser = async (req, res) => {
-    try {
-        const user = await User.findOne({ id: userId }).exec();
-        return res.json(user);
-    } catch (error) {
-        return res.json(error);
-    }
-};
+    User.findOne({ id: userId })
+        .exec()
+        .then(function (user) {
+            if(user== null){
+                exists = true;
+            } else{
+                exists = false;
+            }
+        });
 
-// 새로운 사용자 등록
-exports.insertUser = async (req, res) => {
+    User.findOne({ id: userId, password: password })
+        .exec()
+        .then(function (user) {
+            if (exists) {
+                return res.json({ status: 400, data: '존재하지 않는 아이디입니다.' });
+            } else {
+                // ID는 존재.
+                if (user == null) {
+                    return res.json({ statue: 400, data: '비밀번호가 틀렸습니다.' });
+                }
+                return res.json({ status: 200, data: '로그인에 성공하였습니다.' });
+            }
+        })
+        .catch(function (err) {
+            return res.json(err);
+        });
+}
+
+/**
+ * 모든 사용자 찾기
+ *
+ * @param {*} res 조회 결과
+ *
+ * @author yblee
+ * @since 2023. 12. 15.
+ */
+export function findAllUser(res) {
+    User.find()
+        .exec()
+        .then(function (users) {
+            return res.json({ status: 200, data: users });
+        })
+        .catch(function (err) {
+            return res.json(err);
+        });
+}
+
+/**
+ * 사용자 등록
+ *
+ * @param {*} req 사용자 정보
+ * @param {*} res 등록 결과
+ *
+ * @author yblee
+ * @since 2023. 12. 15.
+ */
+export function insertUser(req, res) {
     const userId = req.body.id;
+    console.log(req.url);
 
-    try {
-        const userExists = await User.findOne({ id: userId }).exec();
-        if (userExists != null) {
-            user = '존재하는 아이디입니다.';
-        }
-        const user = new User(req.body);
-        await user.save();
+    User.findOne({ id: userId })
+        .exec()
+        .then(function (user) {
+            if (user == null) {
+                const result = new User(req.body);
+                result.save();
 
-        return res.json(user);
-    } catch (error) {
-        return res.json(error);
-    }
-};
+                return res.json({ status: 200, data: '회원가입에 성공하였습니다.' });
+            } else {
+                return res.json({ status: 400, data: '존재하는 아이디입니다.' });
+            }
+        })
+        .catch(function (err) {
+            return res.json(err);
+        });
+}
 
-// 사용자 정보 수정
-exports.updateUser = async (req, res) => {
+/**
+ * 사용자 정보 수정
+ *
+ * @param {*} req 사용자 아이디
+ * @param {*} res 수정 결과
+ *
+ * @author yblee
+ * @since 2023. 12. 15.
+ */
+export function updateUser(req, res) {
+    //TODO params 확인 필요
     const userId = req.params.userId;
 
-    try {
-        const user = await User.findOneAndUpdate({ id: userId }, req.body, { new: true }).exec();
-        return res.json(user);
-    } catch (error) {
-        return res.json(error);
-    }
-};
+    User.findOneAndUpdate({ id: userId }, req.body, { new: true })
+        .exec()
+        .then(function () {
+            return res.json({ status: 200, data: '사용자 정보 수정을 성공했습니다.' });
+        })
+        .catch(function (err) {
+            return res.json(err);
+        });
+}
 
-// 사용자 삭제
-exports.deleteUser = async (req, res) => {
+/**
+ * 사용자 정보 삭제
+ *
+ * @param {*} req 사용자 아이디
+ * @param {*} res 삭제 결과
+ *
+ * @author yblee
+ * @since 2023. 12. 15.
+ */
+export function deleteUser(req, res) {
     const userId = req.params.userId;
 
-    try {
-        const user = await User.findOneAndDelete({ id: userId }).exec();
-        return res.json(user);
-    } catch (error) {
-        return res.json(error);
-    }
-};
+    User.findByIdAndDelete({ id: userId })
+        .exec()
+        .then(function () {
+            return res.json({ status: 200, data: '사용자 정보 삭제를 성공했습니다.' });
+        })
+        .catch(function (err) {
+            return res.json(err);
+        });
+}

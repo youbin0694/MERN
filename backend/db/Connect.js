@@ -1,13 +1,22 @@
-const mongoose = require('mongoose');
+import dotenv from 'dotenv'; // env 파일
+import { connect } from 'mongoose';
 
-const mongo = async () => {
+dotenv.config();
+
+/**
+ * DB 연결
+ *
+ * @author yblee
+ * @since 2023. 12. 15.
+ */
+function db() {
     try {
         // DB 연결
-        mongoose.connect('mongodb://ubin:ubin@localhost:27017/admin');
-        console.log('connection');
+        connect(process.env.MONGO_URL);
+        console.log('DB Connect Success!');
     } catch (error) {
         console.log('error');
     }
-};
+}
 
-module.exports = mongo;
+export default db;

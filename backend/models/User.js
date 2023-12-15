@@ -1,8 +1,12 @@
-const mongoose = require('mongoose'); // Schema 모듈 가져오기
-const Schema = mongoose.Schema;
+import { Schema as _Schema, model } from 'mongoose'; // Schema 모듈 가져오기
+const Schema = _Schema;
 
-// User Schema 정의
-// mongoose -> Schema 기준으로 데이터 점검
+/**
+ * 사용자 스키마 정의
+ *
+ * @author yblee
+ * @since 2023. 12. 15.
+ */
 const userSchema = new Schema(
     {
         id: { type: String, required: true },
@@ -16,7 +20,4 @@ const userSchema = new Schema(
 );
 
 // 작성된 스키마를 mongoose에서 사용할 수 있게, 모델 생성 및 내보내기
-module.exports = mongoose.model('User', userSchema);
-
-
-
+export default model('User', userSchema);
